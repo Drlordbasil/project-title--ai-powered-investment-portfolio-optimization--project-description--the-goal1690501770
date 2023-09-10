@@ -35,6 +35,7 @@ from scipy.optimize import minimize
 # Use historical data to evaluate the effectiveness of different strategies
 # Calculate portfolio returns, risk metrics, and compare against benchmark indices
 
+
 class PortfolioOptimizer:
     def __init__(self):
         self.data = None
@@ -55,41 +56,47 @@ class PortfolioOptimizer:
                 data = response.json()
                 df = pd.DataFrame(data)
                 self.data[symbol] = df['close']
-        
+
     def preprocess_data(self):
         # Preprocess the data, calculate returns, remove missing values
         self.asset_returns = self.data.pct_change().dropna()
         self.asset_names = self.asset_returns.columns
         self.asset_covariance = self.asset_returns.cov()
-    
+
     def optimize_portfolio(self):
         num_assets = len(self.asset_names)
         init_weights = np.ones(num_assets) / num_assets
 
         # Define objective function for optimization
         def objective_function(weights):
-            portfolio_return = np.sum(self.asset_returns.mean() * weights) * 252
-            portfolio_volatility = np.sqrt(np.dot(weights.T, np.dot(self.asset_covariance * 252, weights)))
+            portfolio_return = np.sum(
+                self.asset_returns.mean() * weights) * 252
+            portfolio_volatility = np.sqrt(
+                np.dot(weights.T, np.dot(self.asset_covariance * 252, weights)))
             return -portfolio_return / portfolio_volatility
-        
+
         # Optimize portfolio using minimum variance optimization
-        result = minimize(objective_function, init_weights, constraints=({'type': 'eq', 'fun': lambda x: np.sum(x)-1}), bounds=[(0, 1)]*num_assets)
-        
+        result = minimize(objective_function, init_weights, constraints=(
+            {'type': 'eq', 'fun': lambda x: np.sum(x)-1}), bounds=[(0, 1)]*num_assets)
+
         self.weights = result.x
-        
+
     def visualize_portfolio_performance(self):
         # Plot cumulative returns
-        cumulative_returns = np.cumprod(1 + np.sum(self.asset_returns.mean() * self.weights)) - 1
+        cumulative_returns = np.cumprod(
+            1 + np.sum(self.asset_returns.mean() * self.weights)) - 1
         plt.plot(cumulative_returns)
         plt.xlabel('Time')
         plt.ylabel('Cumulative Returns')
         plt.title('Portfolio Cumulative Returns')
         plt.show()
-        
+
         # Plot risk-return trade-off
-        returns = np.array([np.sum(self.asset_returns.mean() * weights) for weights in self.weights])
-        volatilities = np.array([np.sqrt(np.dot(weights.T, np.dot(self.asset_covariance, weights))) for weights in self.weights])
-        
+        returns = np.array([np.sum(self.asset_returns.mean() * weights)
+                           for weights in self.weights])
+        volatilities = np.array([np.sqrt(np.dot(weights.T, np.dot(
+            self.asset_covariance, weights))) for weights in self.weights])
+
         plt.scatter(volatilities, returns)
         plt.xlabel('Volatility')
         plt.ylabel('Return')
@@ -111,6 +118,7 @@ class PortfolioOptimizer:
         # Personalize investment portfolios based on risk preferences and financial goals
         # Utilize efficient frontier optimization and risk-adjusted return analysis
         pass
+
 
 # Example usage
 portfolio = PortfolioOptimizer()
